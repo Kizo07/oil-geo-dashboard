@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRUDE // Geopolitical Signal Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+</head>
+<body>
+<div id="bg-glow"></div>
+
+<header>
+  <div class="brand">
+    <div class="brand-mark">◉</div>
+    <div>
+      <h1>CRUDE<span class="accent">//</span>SIGNAL DESK</h1>
+      <p class="sub">Geopolitical risk monitor for oil futures</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div id="source-pills" class="pills"></div>
+    <div class="updated-wrap">
+      <span id="updated" class="updated">—</span>
+      <button id="refresh-btn" title="Force refresh">⟳</button>
+    </div>
+  </div>
+</header>
+
+<nav id="tabbar">
+  <button class="tab active" data-tab="overview">Overview</button>
+  <button class="tab" data-tab="macro">Macro &amp; Rates</button>
+  <button class="tab" data-tab="positioning">Positioning</button>
+  <button class="tab" data-tab="supply">Supply</button>
+  <button class="tab" data-tab="geopolitics">Geopolitics</button>
+  <button class="tab" data-tab="news">News</button>
+</nav>
+
+<main id="app">
+  <div id="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Warming up collectors — first refresh can take ~60s (GDELT rate limits)…</p>
+  </div>
+
+  <div id="content" class="hidden">
+
+    <!-- ============ OVERVIEW ============ -->
+    <section id="tab-overview" class="tabpane active">
+      <div class="grid-top">
+        <div class="card gauge-card">
+          <div class="card-label">Oil Geopolitical Risk Index</div>
+          <div id="gauge" class="gauge"></div>
+          <div id="risk-components" class="risk-components"></div>
+        </div>
+        <div class="card price-card">
+          <div class="card-label">WTI Crude — Front Month</div>
+          <div class="price-row">
+            <span id="wti-price" class="big-price">—</span>
+            <span id="wti-contract" class="contract-tag"></span>
+          </div>
+          <div id="wti-spark" class="spark"></div>
+          <div class="price-foot">
+            <div><span class="dim">Brent</span> <span id="brent-price" class="mono">—</span></div>
+            <div><span class="dim">B–W spread</span> <span id="bw-spread" class="mono">—</span></div>
+            <div><span class="dim">Gold</span> <span id="gold-price" class="mono">—</span></div>
+          </div>
+        </div>
+        <div class="card curve-card">
+          <div class="card-label">Futures Curve Structure</div>
+          <div id="curve-regime" class="regime">—</div>
+          <div id="curve-depth" class="curve-depth"></div>
+          <div id="curve-note" class="dim small"></div>
+        </div>
+        <div class="card macro-mini">
+          <div class="card-label">Macro Pulse</div>
+          <div class="macro-rows" id="macro-mini-rows"></div>
+        </div>
+      </div>
+
+      <div class="grid-mid">
+        <div class="card wide">
+          <div class="card-label">WTI Futures Curve <span class="dim small">(contract months, live)</span></div>
+          <div id="curve-chart" class="chart-lg"></div>
+        </div>
+        <div class="card">
+          <div class="card-label">Emerging Signal Heat <span class="dim small">(GDELT 7d + RSS 72h)</span></div>
+          <div id="tier3-strip" class="tier3-strip"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ MACRO ============ -->
+    <section id="tab-macro" class="tabpane">
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-label">US Treasuries &amp; Inflation Expectations</div>
+        <div id="yields-grid" class="yields-grid"></div>
+        <div id="bei-row" class="bei-row"></div>
+      </div>
+      <div class="grid-mid">
+        <div class="card">
+          <div class="card-label">Volatility &amp; Risk Appetite</div>
+          <div id="vol-cards" class="vol-cards"></div>
+          <div id="mc-ovx-wrap" class="mt12"><div class="macro-chart-label">OVX — oil volatility index · 6w</div><div id="mc-ovx" class="macro-chart"></div></div>
+          <div id="mc-vix-wrap"><div class="macro-chart-label">VIX · 6w</div><div id="mc-vix" class="macro-chart"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-label">Dollar, Petro-FX &amp; Growth Proxies</div>
+          <div id="fx-cards" class="vol-cards"></div>
+          <div class="macro-charts-2" id="fx-charts"></div>
+        </div>
+      </div>
+      <div class="grid-mid" style="margin-top:16px">
+        <div class="card">
+          <div class="card-label">Refining Economics — 3:2:1 Crack Spread</div>
+          <div id="crack-panel"></div>
+          <div id="mc-crack-wrap" class="mt12"><div class="macro-chart-label">RBOB gasoline ($/gal) · 6w</div><div id="mc-rb" class="macro-chart"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-label">Oil Funds &amp; Benchmarks</div>
+          <div id="bench-cards" class="vol-cards"></div>
+          <div id="mc-uso-wrap" class="mt12"><div class="macro-chart-label">USO ETF · 6w</div><div id="mc-uso" class="macro-chart"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ POSITIONING ============ -->
+    <section id="tab-positioning" class="tabpane">
+      <div class="grid-mid">
+        <div class="card">
+          <div class="card-label">CFTC COT — Managed Money, NYMEX WTI <span class="dim small">(futures only, weekly)</span></div>
+          <div id="cot-panel"></div>
+          <div id="cot-chart" class="chart-lg"></div>
+        </div>
+        <div class="card">
+          <div class="card-label">Baker Hughes Rig Count <span class="dim small">(US, weekly)</span></div>
+          <div id="rig-panel"></div>
+          <div class="card-label" style="margin-top:18px">Kalshi — P(WTI settlement &gt; strike) <span id="kalshi-date" class="dim small"></span></div>
+          <div id="kalshi-chart" class="chart-md"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SUPPLY ============ -->
+    <section id="tab-supply" class="tabpane">
+      <div class="grid-mid">
+        <div class="card">
+          <div class="card-label">US Strategic Petroleum Reserve <span class="dim small">(weekly, EIA)</span></div>
+          <div id="spr-panel"></div>
+          <div id="spr-chart" class="chart-lg"></div>
+        </div>
+        <div class="card">
+          <div class="card-label">Commercial Inventories &amp; Curve</div>
+          <div id="inv-panel"></div>
+          <div class="card-label" style="margin-top:18px">Floating Storage &amp; OPEC+ Spare Capacity</div>
+          <div id="supply-tier3"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ GEOPOLITICS ============ -->
+    <section id="tab-geopolitics" class="tabpane">
+      <div id="chokepoint-cards" class="choke-wrap"></div>
+      <div class="grid-mid" style="margin-top:16px">
+        <div class="card">
+          <div class="card-label">Prediction Markets — Polymarket</div>
+          <div id="pm-events" class="pm-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-label">Conflict &amp; Escalation Signals</div>
+          <div id="conflict-panel"></div>
+          <div class="card-label" style="margin-top:18px">War-Risk &amp; Weather Signals</div>
+          <div id="geo-tier3"></div>
+          <div class="card-label" style="margin-top:18px">Kalshi Geopolitical Events</div>
+          <div id="kalshi-geo"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ NEWS ============ -->
+    <section id="tab-news" class="tabpane">
+      <div class="card">
+        <div class="card-label">News Flow <span class="dim small">(72h, deduped, lexicon-scored)</span>
+          <span id="news-filters" class="news-filters"></span>
+        </div>
+        <div id="news-feed" class="news-feed"></div>
+      </div>
+    </section>
+
+    <footer>
+      <span>Sources: Yahoo Finance · FRED · CFTC · Baker Hughes · EIA · Polymarket · Kalshi · GDELT · Google News RSS · Al Jazeera · BBC</span>
+      <span>Local dashboard — data may be delayed. Not investment advice.</span>
+    </footer>
+  </div>
+</main>
+
+<script src="js/app.js"></script>
+</body>
+</html>

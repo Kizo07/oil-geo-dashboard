@@ -1,0 +1,14 @@
+name: oilgeo
+channels:
+  - defaults
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+      - fastapi
+      - uvicorn[standard]
+      - httpx
+      - pandas
+      - feedparser
+      - xlrd
+      - openpyxl

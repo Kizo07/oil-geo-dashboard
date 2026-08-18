@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Frontend build artifacts (Mantine SPA)
+frontend-mantine/node_modules/
+frontend-mantine/dist/
+*.tsbuildinfo
+
+# Collected data cache
+data/
+
+# Secrets
+.env
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+.venv/
