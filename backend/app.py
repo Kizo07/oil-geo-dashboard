@@ -139,4 +139,4 @@ async def refresh():
     return {"started": True, "refreshing": True}
 
 
-app.mount("/", StaticFiles(directory=str(BASE_DIR / "frontend"), html=True), name="frontend")
+app.mount("/", StaticFiles(directory=str(BASE_DIR / "frontend-mantine" / "dist"), html=True), name="frontend")
