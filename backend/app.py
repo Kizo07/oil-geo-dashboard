@@ -1,4 +1,5 @@
 import asyncio
+import os
 import time
 from contextlib import asynccontextmanager
 
@@ -9,8 +10,8 @@ from fastapi.staticfiles import StaticFiles
 
 import cache
 import signals
-from collectors import cftc, eia, fred, gdelt, kalshi, news, polymarket, rigcount, yahoo
-from config import BASE_DIR, GDELT_QUERIES, TTL_DEFAULT, TTL_GDELT
+from collectors import ais, cftc, eia, fred, gdelt, kalshi, news, polymarket, rigcount, yahoo
+from config import AIS_TTL, BASE_DIR, GDELT_QUERIES, TTL_DEFAULT, TTL_GDELT
 
 GDELT_BACKOFF = 600
 
@@ -35,9 +36,14 @@ def _norm(res, name) -> dict:
 def _build_and_cache(fast, gdelt_res) -> None:
     fred_r, yahoo_r, pm_r, kalshi_r, news_r, eia_r, cftc_r, rig_r = fast
     payload = signals.build(
-        fred_r, yahoo_r, pm_r, kalshi_r, gdelt_res, news_r, eia_r, cftc_r, rig_r
+        fred_r, yahoo_r, pm_r, kalshi_r, gdelt_res, news_r, eia_r, cftc_r, rig_r,
+        _ais_result(),  # read at build time so late-arriving AIS snapshots aren't missed
     )
     cache.put("dashboard", payload)
+
+
+def _ais_result() -> dict:
+    return cache.get_stale("ais_only") or {"status": "pending", "zones": {}}
 
 
 async def _refresh(force: bool = False) -> None:
@@ -107,11 +113,30 @@ async def _loop() -> None:
         await asyncio.sleep(20)
 
 
+async def _ais_loop() -> None:
+    while True:
+        try:
+            res = await ais.collect(os.environ.get("AISSTREAM_API_KEY"))
+            # Store only the data part (status/zones/note live inside it).
+            cache.put("ais_only", res["data"])
+            if res.get("status") != "no_key" and cache.get("dashboard", TTL_DEFAULT) is not None:
+                _spawn(_refresh(force=True))
+        except Exception as e:
+            cache.put("ais_only", {
+                "status": "error",
+                "zones": {},
+                "note": f"{type(e).__name__}: {e}",
+            })
+        await asyncio.sleep(AIS_TTL)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     task = asyncio.create_task(_loop())
+    ais_task = asyncio.create_task(_ais_loop())
     yield
     task.cancel()
+    ais_task.cancel()
 
 
 app = FastAPI(title="Oil Geopolitical Signals", lifespan=lifespan)

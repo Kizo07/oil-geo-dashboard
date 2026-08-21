@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, AppShell, Group, Loader, Skeleton, Stack, Tabs, Text } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { fetchDashboard, triggerRefresh, WarmingUpError } from './api';
@@ -11,12 +11,17 @@ import { Overview } from './views/Overview';
 import { Positioning } from './views/Positioning';
 import { Supply } from './views/Supply';
 
+const Traffic = lazy(() =>
+  import('./views/Traffic').then((m) => ({ default: m.Traffic })),
+);
+
 const TABS = [
   { value: 'overview', label: 'Overview' },
   { value: 'macro', label: 'Macro & Rates' },
   { value: 'positioning', label: 'Positioning' },
   { value: 'supply', label: 'Supply' },
   { value: 'geopolitics', label: 'Geopolitics' },
+  { value: 'traffic', label: 'Live Traffic' },
   { value: 'news', label: 'News' },
 ];
 
@@ -181,6 +186,11 @@ export default function App() {
               </Tabs.Panel>
               <Tabs.Panel value="geopolitics">
                 <Geopolitics data={data} />
+              </Tabs.Panel>
+              <Tabs.Panel value="traffic">
+                <Suspense fallback={<Skeleton height={430} radius="md" mb="md" />}>
+                  <Traffic data={data} />
+                </Suspense>
               </Tabs.Panel>
               <Tabs.Panel value="news">
                 <News data={data} />

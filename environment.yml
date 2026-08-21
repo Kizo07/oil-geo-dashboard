@@ -12,3 +12,4 @@ dependencies:
       - feedparser
       - xlrd
       - openpyxl
+      - websockets

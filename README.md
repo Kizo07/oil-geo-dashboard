@@ -13,6 +13,8 @@ conda env create -f environment.yml
 
 The launcher starts FastAPI/uvicorn on `127.0.0.1:8787` (local-only by design, no auth). Optional: set `EIA_API_KEY` in `backend/.env` to enable EIA inventory data. Cold-start first load takes ~30–60 s; GDELT free tier (1 req/5 s) is handled with spacing, retries, and a 30-min cache.
 
+Optional live vessel traffic (the **Live Traffic** tab): set `AISSTREAM_API_KEY` in `backend/.env` — get a free key at [aisstream.io](https://aisstream.io) with a GitHub login. The backend collects ~45 s AIS position snapshots for both chokepoint zones every 5 min; without a key the tab still renders the monitored zones. Maps use MapLibre GL + free CARTO/OpenStreetMap tiles.
+
 ## Structure
 
 - `backend/` — FastAPI app (`app.py`), query/weight config (`config.py`), disk cache (`cache.py`), composite scoring (`signals.py`), and one async fail-soft collector per source in `collectors/`
