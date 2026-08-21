@@ -40,14 +40,14 @@ CHOKEPOINTS = {
     "hormuz": {
         "name": "Strait of Hormuz",
         "gdelt_key": "hormuz",
-        "gdelt_query": '"strait of hormuz" OR hormuz',
+        "gdelt_query": '("strait of hormuz" OR hormuz)',
         "news_queries": ["strait of hormuz", "hormuz tanker"],
         "pm_keywords": ["hormuz"],
     },
     "bab-mandeb": {
         "name": "Bab el-Mandeb / Red Sea",
         "gdelt_key": "redsea",
-        "gdelt_query": '"bab el-mandeb" OR houthi red sea shipping',
+        "gdelt_query": '("bab el-mandeb" OR houthi red sea shipping)',
         "news_queries": ["houthi red sea shipping", "bab el-mandeb"],
         "pm_keywords": ["red sea", "houthi", "bab el-mandeb"],
     },
@@ -67,7 +67,7 @@ KALSHI_GEO_REGEX = (
 KALSHI_MAX_EVENT_PAGES = 3
 
 GDELT_QUERIES = {
-    "hormuz": '"strait of hormuz" OR hormuz',
+    "hormuz": '("strait of hormuz" OR hormuz)',
     "redsea": 'houthi "red sea" shipping',
     "iran": 'iran israel oil',
     "opec": 'opec oil production',

@@ -100,10 +100,10 @@ export function Positioning({ data }: { data: DashboardData }) {
   const rig = data.positioning.rig_count;
   const ladder = data.prediction_markets.kalshi_ladder;
 
-  const cotChart = useMemo(() => (cot?.history?.length ? cotOption(cot.history) : {}), [cot?.history]);
+  const cotChart = useMemo(() => (cot?.history?.length ? cotOption(cot.history) : {}), [cot?.history, scheme]);
   const kalshiChart = useMemo(
     () => (ladder?.points?.length ? kalshiOption(ladder.points) : {}),
-    [ladder?.points],
+    [ladder?.points, scheme],
   );
 
   return (

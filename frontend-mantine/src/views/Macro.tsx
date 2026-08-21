@@ -104,12 +104,12 @@ function YieldCell({ tenor, y }: { tenor: string; y?: Series }) {
 export function Macro({ data }: { data: DashboardData }) {
   scheme = useMantineColorScheme().colorScheme !== 'light' ? 'dark' : 'light';
   const me = data.macro_ext;
-  const ovxChart = useMemo(() => lineOption(me.ovx?.history, '#ff9f43', { area: true }), [me.ovx?.history]);
-  const vixChart = useMemo(() => lineOption(data.macro.vix?.history, '#ff4d5e', { area: true }), [data.macro.vix?.history]);
-  const cadChart = useMemo(() => lineOption(me.usdcad?.history, '#4cc9f0'), [me.usdcad?.history]);
-  const copperChart = useMemo(() => lineOption(me.copper?.history, '#ff9f43'), [me.copper?.history]);
-  const rbChart = useMemo(() => lineOption(me.rbof?.history, '#2dd4a7'), [me.rbof?.history]);
-  const usoChart = useMemo(() => lineOption(me.uso?.history, '#ffb020'), [me.uso?.history]);
+  const ovxChart = useMemo(() => lineOption(me.ovx?.history, '#ff9f43', { area: true }), [me.ovx?.history, scheme]);
+  const vixChart = useMemo(() => lineOption(data.macro.vix?.history, '#ff4d5e', { area: true }), [data.macro.vix?.history, scheme]);
+  const cadChart = useMemo(() => lineOption(me.usdcad?.history, '#4cc9f0'), [me.usdcad?.history, scheme]);
+  const copperChart = useMemo(() => lineOption(me.copper?.history, '#ff9f43'), [me.copper?.history, scheme]);
+  const rbChart = useMemo(() => lineOption(me.rbof?.history, '#2dd4a7'), [me.rbof?.history, scheme]);
+  const usoChart = useMemo(() => lineOption(me.uso?.history, '#ffb020'), [me.uso?.history, scheme]);
 
   const crack = me.crack_spread_321;
   const crackLevel =

@@ -76,7 +76,7 @@ export function Supply({ data }: { data: DashboardData }) {
   const inv = data.supply.inventories;
   const cs = data.supply.curve_state;
 
-  const sprChart = useMemo(() => (spr?.history?.length ? sprOption(spr.history) : {}), [spr?.history]);
+  const sprChart = useMemo(() => (spr?.history?.length ? sprOption(spr.history) : {}), [spr?.history, scheme]);
 
   const prior = (spr?.history ?? []).slice(0, -1);
   const pct = prior.length

@@ -69,8 +69,16 @@ async def _refresh(force: bool = False) -> None:
                 gdelt_cached = cache.get("gdelt_only", TTL_GDELT)
                 stale_gdelt = cache.get_stale("gdelt_only")
                 pending = {"status": "pending", "data": {"topics": {}}, "errors": []}
-                if gdelt_cached is not None and len(gdelt_cached.get("topics", {})) >= len(GDELT_QUERIES):
-                    _build_and_cache(fast, {"status": "ok", "data": gdelt_cached, "errors": []})
+                if gdelt_cached is not None:
+                    # Fresh within TTL_GDELT: reuse it even if a topic is
+                    # missing — re-collecting on every cycle hammers GDELT's
+                    # rate limiter and keeps the missing topic failing.
+                    complete = len(gdelt_cached.get("topics", {})) >= len(GDELT_QUERIES)
+                    _build_and_cache(fast, {
+                        "status": "ok" if complete else "degraded",
+                        "data": gdelt_cached,
+                        "errors": [],
+                    })
                 else:
                     backoff = cache.get_stale("gdelt_backoff")
                     in_backoff = backoff and time.time() - backoff.get("at", 0) < GDELT_BACKOFF
@@ -111,11 +119,12 @@ app = FastAPI(title="Oil Geopolitical Signals", lifespan=lifespan)
 
 @app.get("/api/health")
 async def health():
+    ts = cache.ts("dashboard")
     return {
         "ok": True,
         "refreshing": _refreshing,
         "last_error": _last_error,
-        "cache_age_s": round(time.time() - cache.ts("dashboard"), 1) if cache.ts("dashboard") else None,
+        "cache_age_s": round(time.time() - ts, 1) if ts else None,
     }
 
 
