@@ -182,9 +182,9 @@ export function Overview({ data }: { data: DashboardData }) {
   );
   const wtiSpark = useMemo(
     () => lineOption(data.prices.wti.history, '#ffb020', { area: true, xAxis: false, left: 0 }),
-    [data.prices.wti.history],
+    [data.prices.wti.history, scheme],
   );
-  const curve = useMemo(() => curveOption(data.prices.curve), [data.prices.curve]);
+  const curve = useMemo(() => curveOption(data.prices.curve), [data.prices.curve, scheme]);
 
   const wti = data.prices.wti;
   const cs = data.prices.curve_state;

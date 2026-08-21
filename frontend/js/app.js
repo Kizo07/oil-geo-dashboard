@@ -503,11 +503,17 @@ function render(d) {
 }
 
 let _tickBusy = false;
+let _tickTimer = null;
 
-async function tick(delay = 60000) {
+function scheduleTick(ms) {
+  if (_tickTimer !== null) clearTimeout(_tickTimer);
+  _tickTimer = setTimeout(() => tick(), ms);
+}
+
+async function tick() {
   if (_tickBusy) return;
   _tickBusy = true;
-  let next = delay;
+  let next = 60000;
   try {
     const r = await fetch("/api/dashboard");
     if (r.status === 202) next = 5000;
@@ -516,16 +522,16 @@ async function tick(delay = 60000) {
     console.error(e);
   }
   _tickBusy = false;
-  setTimeout(() => tick(delay), next);
+  scheduleTick(next);
 }
 
 $("refresh-btn").addEventListener("click", async () => {
   $("refresh-btn").classList.add("spin");
   await fetch("/api/refresh", { method: "POST" });
   setTimeout(() => $("refresh-btn").classList.remove("spin"), 3000);
-  setTimeout(() => tick(60000), 8000);
+  scheduleTick(8000);
 });
 
 window.addEventListener("resize", () => Object.values(charts).forEach((c) => c.resize()));
 
-tick(0);
+scheduleTick(0);

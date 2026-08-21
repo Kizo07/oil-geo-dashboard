@@ -59,14 +59,15 @@ async def _query(client: httpx.AsyncClient, q: str) -> dict:
 async def collect(client: httpx.AsyncClient, previous: dict | None = None) -> dict:
     out, errors = {}, []
     prev_topics = (previous or {}).get("topics", {})
-    for key, q in GDELT_QUERIES.items():
+    for i, (key, q) in enumerate(GDELT_QUERIES.items()):
+        if i:
+            await asyncio.sleep(GDELT_MIN_INTERVAL)
         try:
             out[key] = await _query(client, q)
         except Exception as e:
             errors.append(f"{key}: {e}")
             if key in prev_topics:
                 out[key] = prev_topics[key]
-        await asyncio.sleep(GDELT_MIN_INTERVAL)
     status = "ok" if not errors else ("degraded" if out else "error")
     return {
         "status": status,

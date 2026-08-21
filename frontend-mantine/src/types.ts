@@ -142,6 +142,36 @@ export interface SprData {
   history: HistoryPoint[];
 }
 
+export interface AisVessel {
+  mmsi: number | string;
+  name?: string | null;
+  lat: number;
+  lon: number;
+  sog?: number | null;
+  cog?: number | null;
+  nav_status?: string;
+}
+
+export interface AisZone {
+  name: string;
+  bbox: [number, number][];
+  center?: [number, number];
+  zoom?: number;
+  count: number;
+  n_moving?: number;
+  n_anchored?: number;
+  avg_sog?: number | null;
+  vessels: AisVessel[];
+}
+
+export interface AisData {
+  status?: string;
+  as_of?: string | null;
+  window_s?: number;
+  zones: Record<string, AisZone>;
+  note?: string;
+}
+
 export interface DashboardData {
   updated: string;
   sources: Record<string, string>;
@@ -213,4 +243,5 @@ export interface DashboardData {
   news: NewsItem[];
   gdelt: Record<string, unknown>;
   eia: Record<string, unknown>;
+  ais: AisData;
 }

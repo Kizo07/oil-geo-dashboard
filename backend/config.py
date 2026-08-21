@@ -40,14 +40,14 @@ CHOKEPOINTS = {
     "hormuz": {
         "name": "Strait of Hormuz",
         "gdelt_key": "hormuz",
-        "gdelt_query": '"strait of hormuz" OR hormuz',
+        "gdelt_query": '("strait of hormuz" OR hormuz)',
         "news_queries": ["strait of hormuz", "hormuz tanker"],
         "pm_keywords": ["hormuz"],
     },
     "bab-mandeb": {
         "name": "Bab el-Mandeb / Red Sea",
         "gdelt_key": "redsea",
-        "gdelt_query": '"bab el-mandeb" OR houthi red sea shipping',
+        "gdelt_query": '("bab el-mandeb" OR houthi red sea shipping)',
         "news_queries": ["houthi red sea shipping", "bab el-mandeb"],
         "pm_keywords": ["red sea", "houthi", "bab el-mandeb"],
     },
@@ -67,7 +67,7 @@ KALSHI_GEO_REGEX = (
 KALSHI_MAX_EVENT_PAGES = 3
 
 GDELT_QUERIES = {
-    "hormuz": '"strait of hormuz" OR hormuz',
+    "hormuz": '("strait of hormuz" OR hormuz)',
     "redsea": 'houthi "red sea" shipping',
     "iran": 'iran israel oil',
     "opec": 'opec oil production',
@@ -149,3 +149,25 @@ POS_WORDS = {
 }
 
 EIA_V1_STOCKS_SERIES = "PET.WCESTUP.W"
+
+# ---- Live vessel traffic (AIS) -------------------------------------------
+# Free realtime AIS stream; get a key with a GitHub login at aisstream.io.
+AISSTREAM_WS = "wss://stream.aisstream.io/v0/stream"
+AIS_TTL = 300
+AIS_COLLECT_WINDOW_S = 45
+AIS_MAX_VESSELS_PER_ZONE = 500
+# bbox = ((lat_min, lon_min), (lat_max, lon_max))
+AIS_ZONES = {
+    "hormuz": {
+        "name": "Strait of Hormuz",
+        "bbox": ((24.9, 54.9), (27.0, 57.5)),
+        "center": [56.2, 25.95],
+        "zoom": 7.6,
+    },
+    "bab-mandeb": {
+        "name": "Bab el-Mandeb / Southern Red Sea",
+        "bbox": ((11.6, 41.8), (15.2, 45.6)),
+        "center": [43.7, 13.4],
+        "zoom": 7.4,
+    },
+}

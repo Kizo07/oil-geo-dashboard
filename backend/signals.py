@@ -239,12 +239,13 @@ def band_for(score: float) -> str:
     return "Critical"
 
 
-def build(fred, yahoo, pm, kalshi, gdelt, news, eia, cftc=None, rigcount=None) -> dict:
+def build(fred, yahoo, pm, kalshi, gdelt, news, eia, cftc=None, rigcount=None, ais=None) -> dict:
     fred_d, yahoo_d = fred.get("data", {}), yahoo.get("data", {})
     pm_d, kalshi_d = pm.get("data", {}), kalshi.get("data", {})
     gdelt_d, news_d, eia_d = gdelt.get("data", {}), news.get("data", {}), eia.get("data", {})
     cftc_d = (cftc or {}).get("data", {})
     rig_d = (rigcount or {}).get("data", {})
+    ais_d = ais or {"status": "unavailable", "zones": {}}
 
     chokepoints = []
     for cp_id, cp in CHOKEPOINTS.items():
@@ -287,6 +288,7 @@ def build(fred, yahoo, pm, kalshi, gdelt, news, eia, cftc=None, rigcount=None) -
                 "kalshi": kalshi, "gdelt": gdelt, "news": news, "eia": eia,
                 "cftc": cftc or {"status": "error"},
                 "rigcount": rigcount or {"status": "error"},
+                "ais": ais_d,
             }.items()
         },
         "risk": {
@@ -338,4 +340,5 @@ def build(fred, yahoo, pm, kalshi, gdelt, news, eia, cftc=None, rigcount=None) -
         "news": news_d.get("items", []),
         "gdelt": gdelt_d,
         "eia": {"status": eia.get("status"), **eia_d},
+        "ais": ais_d,
     }
