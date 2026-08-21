@@ -6,8 +6,8 @@ import httpx
 import pandas as pd
 
 SPR_XLS = "https://www.eia.gov/dnav/pet/hist_xls/WCSSTUS1w.xls"
-INV_URL = "https://api.eia.gov/v2/seriesid/{series}"
-INV_SERIES = "PET.WCESTUP.W"
+INV_URL = "https://api.eia.gov/v2/petroleum/sum/sndw/data"
+INV_SERIES = "WCRSTUS1"  # U.S. Ending Stocks of Crude Oil (thousand barrels), weekly WPSR
 HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64)"}
 SPR_HIST_WEEKS = 52
 
@@ -51,7 +51,16 @@ async def _inventories(client: httpx.AsyncClient) -> dict:
     key = os.environ.get("EIA_API_KEY")
     if not key:
         return {"status": "no_key", "note": "Set EIA_API_KEY (free at eia.gov) for weekly commercial inventories."}
-    r = await client.get(INV_URL.format(series=INV_SERIES), params={"api_key": key}, timeout=25)
+    params = {
+        "api_key": key,
+        "frequency": "weekly",
+        "data[0]": "value",
+        "facets[series][]": INV_SERIES,
+        "sort[0][column]": "period",
+        "sort[0][direction]": "desc",
+        "length": "16",
+    }
+    r = await client.get(INV_URL, params=params, timeout=25)
     r.raise_for_status()
     data = r.json().get("response", {}).get("data")
     if not data:
@@ -66,6 +75,7 @@ async def _inventories(client: httpx.AsyncClient) -> dict:
             rows.append({"period": row.get("period"), "value": val})
     if not rows:
         raise RuntimeError("API returned no recent values")
+    rows.sort(key=lambda x: str(x.get("period", "")))  # v2 returns newest-first
     last = rows[-1]["value"]
     prev = rows[-2]["value"] if len(rows) > 1 else last
     return {"status": "ok", "last": last, "change_wow": round(last - prev, 1), "history": rows}
