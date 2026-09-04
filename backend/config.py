@@ -154,6 +154,7 @@ EIA_V1_STOCKS_SERIES = "PET.WCESTUP.W"
 # Free realtime AIS stream; get a key with a GitHub login at aisstream.io.
 AISSTREAM_WS = "wss://stream.aisstream.io/v0/stream"
 AIS_TTL = 300
+AIS_RETRY_BASE_S = 60
 AIS_COLLECT_WINDOW_S = 45
 AIS_MAX_VESSELS_PER_ZONE = 500
 # bbox = ((lat_min, lon_min), (lat_max, lon_max))

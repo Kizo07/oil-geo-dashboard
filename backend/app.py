@@ -1,4 +1,5 @@
 import asyncio
+import copy
 import os
 import time
 from contextlib import asynccontextmanager
@@ -11,7 +12,7 @@ from fastapi.staticfiles import StaticFiles
 import cache
 import signals
 from collectors import ais, cftc, eia, fred, gdelt, kalshi, news, polymarket, rigcount, yahoo
-from config import AIS_TTL, BASE_DIR, GDELT_QUERIES, TTL_DEFAULT, TTL_GDELT
+from config import AIS_RETRY_BASE_S, AIS_TTL, BASE_DIR, GDELT_QUERIES, TTL_DEFAULT, TTL_GDELT
 
 GDELT_BACKOFF = 600
 
@@ -44,6 +45,66 @@ def _build_and_cache(fast, gdelt_res) -> None:
 
 def _ais_result() -> dict:
     return cache.get_stale("ais_only") or {"status": "pending", "zones": {}}
+
+
+def _has_ais_positions(snapshot: dict | None) -> bool:
+    zones = (snapshot or {}).get("zones") or {}
+    return any((zone or {}).get("count", 0) > 0 for zone in zones.values())
+
+
+def _merge_ais_snapshot(previous: dict | None, result: dict) -> dict:
+    """Keep the last usable positions when a collection attempt has no data."""
+    status = result.get("status") or "error"
+    current = copy.deepcopy(result.get("data") or {})
+    current.setdefault("status", status)
+    current.update({
+        "provider_status": status,
+        "stale": False,
+        "last_attempt_at": current.get("as_of"),
+    })
+    if status in {"ok", "degraded"}:
+        current["last_success_at"] = current.get("as_of")
+    else:
+        current.setdefault("last_success_at", None)
+
+    if status in {"empty", "error"} and _has_ais_positions(previous):
+        merged = copy.deepcopy(previous)
+        merged.update({
+            "status": "stale",
+            "provider_status": status,
+            "stale": True,
+            "last_success_at": previous.get("last_success_at") or previous.get("as_of"),
+            "last_attempt_at": current.get("as_of"),
+            "note": current.get("note"),
+        })
+        return merged
+
+    return current
+
+
+def _ais_retry_delay(status: str, consecutive_failures: int) -> int:
+    if status not in {"empty", "error"}:
+        return AIS_TTL
+    exponent = min(max(consecutive_failures - 1, 0), 10)
+    return min(AIS_TTL, AIS_RETRY_BASE_S * (2 ** exponent))
+
+
+def _ais_display_signature(snapshot: dict | None) -> tuple:
+    data = snapshot or {}
+    zones = data.get("zones") or {}
+    counts = tuple(sorted(
+        (key, (zone or {}).get("count", 0))
+        for key, zone in zones.items()
+    ))
+    status = data.get("status")
+    return (
+        status,
+        data.get("provider_status") or status,
+        bool(data.get("stale")),
+        data.get("last_success_at"),
+        data.get("note"),
+        counts,
+    )
 
 
 async def _refresh(force: bool = False) -> None:
@@ -114,20 +175,37 @@ async def _loop() -> None:
 
 
 async def _ais_loop() -> None:
+    consecutive_failures = 0
     while True:
         try:
             res = await ais.collect(os.environ.get("AISSTREAM_API_KEY"))
-            # Store only the data part (status/zones/note live inside it).
-            cache.put("ais_only", res["data"])
-            if res.get("status") != "no_key" and cache.get("dashboard", TTL_DEFAULT) is not None:
-                _spawn(_refresh(force=True))
         except Exception as e:
-            cache.put("ais_only", {
+            attempted_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            res = {
                 "status": "error",
-                "zones": {},
-                "note": f"{type(e).__name__}: {e}",
-            })
-        await asyncio.sleep(AIS_TTL)
+                "data": {
+                    "status": "error",
+                    "as_of": attempted_at,
+                    "zones": {},
+                    "note": f"{type(e).__name__}: collector failed before returning a snapshot",
+                },
+                "errors": [f"{type(e).__name__}: collector failed before returning a snapshot"],
+            }
+        # Store only the merged data part; the dashboard never sees the outer
+        # collector envelope.
+        snapshot = _merge_ais_snapshot(cache.get_stale("ais_only"), res)
+        cache.put("ais_only", snapshot)
+        dashboard_snapshot = cache.get("dashboard", TTL_DEFAULT)
+        dashboard_ais = (dashboard_snapshot or {}).get("ais")
+        if (
+            res.get("status") != "no_key"
+            and dashboard_snapshot is not None
+            and _ais_display_signature(dashboard_ais) != _ais_display_signature(snapshot)
+        ):
+            _spawn(_refresh(force=True))
+        status = res.get("status") or "error"
+        consecutive_failures = consecutive_failures + 1 if status in {"empty", "error"} else 0
+        await asyncio.sleep(_ais_retry_delay(status, consecutive_failures))
 
 
 @asynccontextmanager

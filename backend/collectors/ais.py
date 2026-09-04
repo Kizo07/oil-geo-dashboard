@@ -27,6 +27,13 @@ NAV_STATUS = {
 ANCHORED_STATUSES = {"anchored", "moored", "aground", "not commanding"}
 
 
+def _safe_error(message: object, access_value: str | None) -> str:
+    text = str(message)
+    if access_value:
+        text = text.replace(access_value, "[redacted]")
+    return text[:500]
+
+
 def _f(v) -> float | None:
     try:
         x = float(v)
@@ -151,11 +158,14 @@ async def collect(api_key: str | None = None) -> dict:
         # Connected + authenticated but the feed delivered nothing —
         # typically an aisstream.io-side outage (free beta, no SLA).
         status = "empty"
-        errors.append("feed connected but delivered no positions; retrying")
+        errors.append("provider accepted the subscription but delivered no positions")
+    errors = [_safe_error(error, api_key) for error in errors]
     data = {
         "status": status,
         "as_of": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
         "window_s": AIS_COLLECT_WINDOW_S,
         "zones": zones_out,
     }
+    if errors:
+        data["note"] = errors[0]
     return {"status": status, "data": data, "errors": errors}

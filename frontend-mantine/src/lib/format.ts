@@ -38,8 +38,10 @@ export const sourceColor = (status: string): string => {
     case 'ok':
       return 'green';
     case 'degraded':
+    case 'stale':
       return 'yellow';
     case 'error':
+    case 'empty':
     case 'unavailable':
       return 'red';
     default:

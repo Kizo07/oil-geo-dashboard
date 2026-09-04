@@ -166,7 +166,11 @@ export interface AisZone {
 
 export interface AisData {
   status?: string;
+  provider_status?: string;
+  stale?: boolean;
   as_of?: string | null;
+  last_attempt_at?: string | null;
+  last_success_at?: string | null;
   window_s?: number;
   zones: Record<string, AisZone>;
   note?: string;

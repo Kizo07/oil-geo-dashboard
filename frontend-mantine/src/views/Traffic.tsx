@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import type { FeatureCollection, Point } from 'geojson';
 import type { LngLatBoundsLike, MapLayerMouseEvent, StyleSpecification } from 'maplibre-gl';
-import { Alert, Badge, Group, SimpleGrid, Stack, Text } from '@mantine/core';
+import { Alert, Anchor, Badge, Group, SimpleGrid, Stack, Text } from '@mantine/core';
 import { Panel, Stat } from '../components/ui';
 import { fmt, fmtInt } from '../lib/format';
 import type { AisData, AisZone, DashboardData } from '../types';
@@ -14,6 +14,70 @@ const CARTO_TILES = ['a', 'b', 'c', 'd'].map(tile);
 const COLOR_STOPPED = '#ff4d5e';
 const COLOR_SLOW = '#ffb020';
 const COLOR_UNDERWAY = '#4cc9f0';
+const SENTENCE_END = /[.!?]$/;
+
+const FALLBACK_ZONES = {
+  hormuz: {
+    name: 'Strait of Hormuz',
+    vesselFinderHref: 'https://www.vesselfinder.com/aismap?lat=25.95&lon=56.2&zoom=8&width=100%25&height=430&names=false',
+    marineTrafficHref: 'https://www.marinetraffic.com/en/ais/home/centerx:56.2/centery:25.95/zoom:8',
+  },
+  'bab-mandeb': {
+    name: 'Bab el-Mandeb / Southern Red Sea',
+    vesselFinderHref: 'https://www.vesselfinder.com/aismap?lat=13.4&lon=43.7&zoom=6&width=100%25&height=430&names=false',
+    marineTrafficHref: 'https://www.marinetraffic.com/en/ais/home/centerx:43.7/centery:13.4/zoom:8',
+  },
+} as const;
+
+type FallbackZoneKey = keyof typeof FALLBACK_ZONES;
+
+function ExternalMapFallback() {
+  return (
+    <Alert color="blue" title="External live maps" mb="md">
+      <Text size="sm" mb={8}>
+        The native AIS feed is unavailable. Live VesselFinder maps are shown below while automatic
+        retries continue in the background. MarineTraffic links offer a separate view.
+      </Text>
+      <Group gap="md" wrap="wrap">
+        {Object.values(FALLBACK_ZONES).map((item) => (
+          <Anchor
+            key={item.marineTrafficHref}
+            href={item.marineTrafficHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            size="sm"
+            fw={600}
+          >
+            Open {item.name} on MarineTraffic ↗
+          </Anchor>
+        ))}
+      </Group>
+    </Alert>
+  );
+}
+
+function ExternalLiveMap({ zoneKey }: { zoneKey: FallbackZoneKey }) {
+  const zone = FALLBACK_ZONES[zoneKey];
+  return (
+    <div style={{ height: 430, width: '100%', borderRadius: 12, overflow: 'hidden', background: '#b6cee8' }}>
+      <iframe
+        title={`Live vessel map — ${zone.name}`}
+        src={zone.vesselFinderHref}
+        width="100%"
+        height="430"
+        loading="eager"
+        referrerPolicy="strict-origin-when-cross-origin"
+        sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+        style={{ display: 'block', width: '100%', height: 430, border: 0 }}
+      />
+    </div>
+  );
+}
+
+function asSentence(value: string): string {
+  const text = value.trim();
+  return SENTENCE_END.test(text) ? text : `${text}.`;
+}
 
 function styleFor(): StyleSpecification {
   return {
@@ -168,22 +232,43 @@ function ChokeMap({ zone }: { zone: AisZone }) {
   );
 }
 
-function ZoneCard({ zoneKey, zone, asOf }: { zoneKey: string; zone?: AisZone; asOf?: string | null }) {
+function ZoneCard({
+  zoneKey,
+  zone,
+  asOf,
+  external,
+}: {
+  zoneKey: FallbackZoneKey;
+  zone?: AisZone;
+  asOf?: string | null;
+  external: boolean;
+}) {
   return (
     <Panel
-      label={zone?.name ?? zoneKey}
-      sub={asOf ? `· updated ${asOf.replace('T', ' ').replace('Z', '')} UTC` : undefined}
+      label={zone?.name ?? FALLBACK_ZONES[zoneKey].name}
+      sub={external ? '· live via VesselFinder' : (asOf ? `· updated ${asOf.replace('T', ' ').replace('Z', '')} UTC` : undefined)}
     >
-      <SimpleGrid cols={4} spacing={10} mb="sm">
-        <Stat k="vessels tracked" v={fmtInt(zone?.count ?? 0)} />
-        <Stat k="underway" v={fmtInt(zone?.n_moving ?? 0)} />
-        <Stat k="anchored / slow-stop" v={fmtInt(zone?.n_anchored ?? 0)} />
-        <Stat k="avg SOG (kn)" v={zone?.avg_sog != null ? fmt(zone.avg_sog, 1) : '—'} />
-      </SimpleGrid>
-      {zone ? (
-        <ChokeMap zone={zone} />
+      {external ? (
+        <>
+          <Text size="xs" c="dimmed" mb="sm">
+            Live third-party visualization; native dashboard statistics resume when AISStream recovers.
+          </Text>
+          <ExternalLiveMap zoneKey={zoneKey} />
+        </>
       ) : (
-        <Text size="xs" c="dimmed">Waiting for the first AIS collection cycle…</Text>
+        <>
+          <SimpleGrid cols={4} spacing={10} mb="sm">
+            <Stat k="vessels tracked" v={fmtInt(zone?.count ?? 0)} />
+            <Stat k="underway" v={fmtInt(zone?.n_moving ?? 0)} />
+            <Stat k="anchored / slow-stop" v={fmtInt(zone?.n_anchored ?? 0)} />
+            <Stat k="avg SOG (kn)" v={zone?.avg_sog != null ? fmt(zone.avg_sog, 1) : '—'} />
+          </SimpleGrid>
+          {zone ? (
+            <ChokeMap zone={zone} />
+          ) : (
+            <Text size="xs" c="dimmed">Waiting for the first AIS collection cycle…</Text>
+          )}
+        </>
       )}
     </Panel>
   );
@@ -194,14 +279,24 @@ export function Traffic({ data }: { data: DashboardData }) {
   const hormuz = ais.zones?.hormuz;
   const mandeb = ais.zones?.['bab-mandeb'];
   const total = (hormuz?.count ?? 0) + (mandeb?.count ?? 0);
+  const fallbackNeeded = ['no_key', 'pending', 'empty', 'error', 'stale', 'unavailable'].includes(ais.status ?? '');
+  const retryBackoffActive = ['empty', 'error', 'stale'].includes(ais.status ?? '');
+  const providerNote = ais.note ? asSentence(ais.note) : null;
 
   return (
     <>
       {ais.status === 'no_key' ? (
         <Alert color="yellow" title="Live AIS disabled — no API key" mb="md">
-          {ais.note ||
+          {providerNote ||
             'Set AISSTREAM_API_KEY (free account at aisstream.io) and restart the backend to see live vessel traffic.'}
           {' '}Maps below show the monitored zones only.
+        </Alert>
+      ) : null}
+      {ais.status === 'stale' ? (
+        <Alert color="yellow" title="AIS feed unavailable — showing last successful snapshot" mb="md">
+          {providerNote || 'The latest collection failed.'}{' '}
+          Snapshot time: {ais.last_success_at || ais.as_of || 'unknown'}. Last attempt:{' '}
+          {ais.last_attempt_at || 'unknown'}. Automatic retries continue with a capped backoff.
         </Alert>
       ) : null}
       {(ais.status === 'error' || ais.status === 'pending' || ais.status === 'empty') ? (
@@ -213,29 +308,33 @@ export function Traffic({ data }: { data: DashboardData }) {
           {ais.status === 'pending'
             ? 'First AIS collection is still running (~45 s window).'
             : ais.status === 'empty'
-              ? (ais.note || 'Feed connected but delivered no positions — likely a temporary upstream outage. Retrying every 5 min.')
-              : (ais.note || 'Last AIS collection failed — will retry automatically.')}
+              ? (providerNote || 'Feed connected but delivered no positions — likely a temporary upstream outage. Retrying automatically.')
+              : (providerNote || 'Last AIS collection failed — retrying automatically.')}
         </Alert>
       ) : null}
+      {fallbackNeeded ? <ExternalMapFallback /> : null}
 
       <Group gap={10} mb="md" wrap="wrap">
         <Badge color="amber" variant="light" ff="monospace" size="lg">
-          {fmtInt(total)} vessels in monitored zones
+          {fallbackNeeded ? 'native vessel counts unavailable' : `${fmtInt(total)} vessels in monitored zones`}
         </Badge>
         {ais.window_s ? (
-          <Text size="xs" c="dimmed">snapshot window ~{ais.window_s}s · refreshes every 5 min</Text>
+          <Text size="xs" c="dimmed">
+            snapshot window ~{ais.window_s}s · {retryBackoffActive ? 'retrying with capped backoff' : 'refreshes every 5 min'}
+          </Text>
         ) : null}
       </Group>
 
       <SimpleGrid cols={{ base: 1, xl: 2 }} spacing="md" mb="md">
-        <ZoneCard zoneKey="hormuz" zone={hormuz} asOf={ais.as_of} />
-        <ZoneCard zoneKey="bab-mandeb" zone={mandeb} asOf={ais.as_of} />
+        <ZoneCard zoneKey="hormuz" zone={hormuz} asOf={ais.as_of} external={fallbackNeeded} />
+        <ZoneCard zoneKey="bab-mandeb" zone={mandeb} asOf={ais.as_of} external={fallbackNeeded} />
       </SimpleGrid>
 
       <Stack gap={4}>
         <Text size="xs" c="dimmed">
-          Positions from the free AISStream.io websocket feed (server-side, key stays local); basemap
-          © OpenStreetMap contributors © CARTO. Dashed amber outline marks the monitored bounding box.
+          {fallbackNeeded
+            ? 'Fallback maps © VesselFinder and OpenStreetMap contributors; native AISStream statistics are unavailable.'
+            : 'Positions from the free AISStream.io websocket feed (server-side, key stays local); basemap © OpenStreetMap contributors © CARTO. Dashed amber outline marks the monitored bounding box.'}
         </Text>
       </Stack>
     </>
