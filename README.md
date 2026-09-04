@@ -2,6 +2,21 @@
 
 A local-only web dashboard that aggregates publicly available geopolitical and market signals affecting crude oil futures and distills them into a composite **Oil Geopolitical Risk Index (0–100)**. Data sources include WTI/Brent prices (Yahoo, FRED), prediction markets (Polymarket, Kalshi), news flow (GDELT, RSS), macro rates, positioning (CFTC COT, Baker Hughes rigs, EIA SPR), and EIA inventories (optional key). Status bands: 0–25 Low · 25–45 Elevated · 45–65 High · 65–85 Severe · 85+ Critical.
 
+## Screenshots
+
+**Overview** — risk gauge with component weights, WTI front-month, curve
+structure, macro pulse, live futures curve, GDELT/RSS signal heat:
+
+![Overview](docs/screenshots/overview.png)
+
+**Macro & Rates** — Treasury curve, breakevens, VIX/OVX term structure,
+dollar and petro-FX, crack spreads, oil funds and benchmarks:
+
+![Macro & Rates](docs/screenshots/macro-rates.png)
+
+Tabs: Overview · Macro & Rates · Positioning · Supply · Geopolitics ·
+Live Traffic (AIS vessel tracking with outage fallbacks) · News.
+
 ## Run
 
 Requires conda env `oilgeo` (Python 3.12) created from `environment.yml`:
