@@ -48,13 +48,13 @@ export function SourcePills({ sources }: { sources: Record<string, string> }) {
 export function useChartColors() {
   const dark = useMantineColorScheme().colorScheme !== 'light';
   return {
-    axisLine: dark ? '#2a3245' : '#c7cdd9',
-    axisLabel: dark ? '#8b93a7' : '#5a6378',
-    splitLine: dark ? 'rgba(255,255,255,0.045)' : 'rgba(15,23,42,0.07)',
-    tooltipBg: dark ? '#111622' : '#ffffff',
-    tooltipBorder: dark ? '#2a3245' : '#c7cdd9',
-    tooltipText: dark ? '#e8ecf4' : '#1f2937',
-    statFill: dark ? 'rgba(255,255,255,0.03)' : 'rgba(15,23,42,0.04)',
+    axisLine: dark ? '#1e4254' : '#d3e3ee',
+    axisLabel: dark ? '#a1b4c4' : '#445e72',
+    splitLine: dark ? 'rgba(8,191,255,0.05)' : 'rgba(0,109,159,0.06)',
+    tooltipBg: dark ? '#07131d' : '#ffffff',
+    tooltipBorder: dark ? 'rgba(86,183,229,0.34)' : 'rgba(17,93,133,0.32)',
+    tooltipText: dark ? '#edf7fc' : '#102d42',
+    statFill: dark ? 'rgba(107,219,255,0.05)' : 'rgba(0,107,145,0.05)',
   };
 }
 
@@ -80,8 +80,9 @@ export function Stat({ k, v, sub }: { k: string; v: ReactNode; sub?: ReactNode }
 }
 
 export function BigStat({ v, k, sub, color }: { v: ReactNode; k: string; sub?: ReactNode; color?: string }) {
+  const c = useChartColors();
   return (
-    <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: '13px 14px', textAlign: 'center' }}>
+    <div style={{ background: c.statFill, borderRadius: 12, padding: '13px 14px', textAlign: 'center' }}>
       <Text ff="monospace" fw={700} size="xl" c={color}>{v}</Text>
       <Text style={{ fontSize: 10 }} c="dimmed" tt="uppercase" lts={0.8} mt="4px">{k}</Text>
       {sub ? <Text ff="monospace" style={{ fontSize: 10.5 }} c="dimmed" mt="3px">{sub}</Text> : null}

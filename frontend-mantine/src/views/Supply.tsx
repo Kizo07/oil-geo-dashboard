@@ -11,28 +11,28 @@ import type { DashboardData } from '../types';
 const CHART = {
   dark: {
     AXIS: {
-      axisLine: { lineStyle: { color: '#2a3245' } },
-      axisLabel: { color: '#8b93a7', fontFamily: 'JetBrains Mono', fontSize: 10 },
-      splitLine: { lineStyle: { color: 'rgba(255,255,255,0.045)' } },
+      axisLine: { lineStyle: { color: '#1e4254' } },
+      axisLabel: { color: '#a1b4c4', fontFamily: 'IBM Plex Mono', fontSize: 10 },
+      splitLine: { lineStyle: { color: 'rgba(8,191,255,0.05)' } },
     },
     TOOLTIP: {
       trigger: 'axis' as const,
-      backgroundColor: '#111622',
-      borderColor: '#2a3245',
-      textStyle: { color: '#e8ecf4', fontSize: 11 },
+      backgroundColor: '#07131d',
+      borderColor: 'rgba(86,183,229,0.34)',
+      textStyle: { color: '#edf7fc', fontSize: 11 },
     },
   },
   light: {
     AXIS: {
-      axisLine: { lineStyle: { color: '#c7cdd9' } },
-      axisLabel: { color: '#5a6378', fontFamily: 'JetBrains Mono', fontSize: 10 },
-      splitLine: { lineStyle: { color: 'rgba(15,23,42,0.07)' } },
+      axisLine: { lineStyle: { color: '#d3e3ee' } },
+      axisLabel: { color: '#445e72', fontFamily: 'IBM Plex Mono', fontSize: 10 },
+      splitLine: { lineStyle: { color: 'rgba(0,109,159,0.06)' } },
     },
     TOOLTIP: {
       trigger: 'axis' as const,
       backgroundColor: '#ffffff',
-      borderColor: '#c7cdd9',
-      textStyle: { color: '#1f2937', fontSize: 11 },
+      borderColor: 'rgba(17,93,133,0.32)',
+      textStyle: { color: '#102d42', fontSize: 11 },
     },
   },
 };
@@ -50,7 +50,7 @@ function sprOption(history: { date?: string; value: number }[]): EChartsOption {
         data: history.map((h) => h.value),
         showSymbol: false,
         smooth: true,
-        lineStyle: { color: '#a78bfa', width: 1.8 },
+        lineStyle: { color: '#cf9440', width: 1.8 },
         areaStyle: {
           color: {
             type: 'linear',
@@ -59,8 +59,8 @@ function sprOption(history: { date?: string; value: number }[]): EChartsOption {
             x2: 0,
             y2: 1,
             colorStops: [
-              { offset: 0, color: '#a78bfa44' },
-              { offset: 1, color: '#a78bfa00' },
+              { offset: 0, color: '#cf944044' },
+              { offset: 1, color: '#cf944000' },
             ],
           },
         },

@@ -129,9 +129,7 @@ export default function App() {
   }, []);
 
   return (
-    <>
-      <div id="bg-glow" aria-hidden />
-      <AppShell header={{ height: { base: 96, sm: 64 } }} padding={{ base: 'sm', sm: 'md' }}>
+    <AppShell header={{ height: { base: 96, sm: 64 } }} padding={{ base: 'sm', sm: 'md' }}>
       <AppShell.Header>
         <Header
           sources={data?.sources ?? {}}
@@ -206,7 +204,6 @@ export default function App() {
         ) : null}
         </Tabs>
       </AppShell.Main>
-      </AppShell>
-    </>
+    </AppShell>
   );
 }
