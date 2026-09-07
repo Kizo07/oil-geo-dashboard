@@ -3,7 +3,7 @@ import { useMantineColorScheme } from '@mantine/core';
 import { Badge, Group, SimpleGrid, Text } from '@mantine/core';
 import type { EChartsOption } from 'echarts';
 import { EChart } from '../components/EChart';
-import { BigStat, Panel } from '../components/ui';
+import { BigStat, Panel, useChartColors } from '../components/ui';
 import { chgArrow, chgColor, fmt } from '../lib/format';
 import type { DashboardData, Series } from '../types';
 
@@ -11,28 +11,28 @@ import type { DashboardData, Series } from '../types';
 const CHART = {
   dark: {
     AXIS: {
-      axisLine: { lineStyle: { color: '#2a3245' } },
-      axisLabel: { color: '#8b93a7', fontFamily: 'JetBrains Mono', fontSize: 10 },
-      splitLine: { lineStyle: { color: 'rgba(255,255,255,0.045)' } },
+      axisLine: { lineStyle: { color: '#1e4254' } },
+      axisLabel: { color: '#a1b4c4', fontFamily: 'IBM Plex Mono', fontSize: 10 },
+      splitLine: { lineStyle: { color: 'rgba(8,191,255,0.05)' } },
     },
     TOOLTIP: {
       trigger: 'axis' as const,
-      backgroundColor: '#111622',
-      borderColor: '#2a3245',
-      textStyle: { color: '#e8ecf4', fontSize: 11 },
+      backgroundColor: '#07131d',
+      borderColor: 'rgba(86,183,229,0.34)',
+      textStyle: { color: '#edf7fc', fontSize: 11 },
     },
   },
   light: {
     AXIS: {
-      axisLine: { lineStyle: { color: '#c7cdd9' } },
-      axisLabel: { color: '#5a6378', fontFamily: 'JetBrains Mono', fontSize: 10 },
-      splitLine: { lineStyle: { color: 'rgba(15,23,42,0.07)' } },
+      axisLine: { lineStyle: { color: '#d3e3ee' } },
+      axisLabel: { color: '#445e72', fontFamily: 'IBM Plex Mono', fontSize: 10 },
+      splitLine: { lineStyle: { color: 'rgba(0,109,159,0.06)' } },
     },
     TOOLTIP: {
       trigger: 'axis' as const,
       backgroundColor: '#ffffff',
-      borderColor: '#c7cdd9',
-      textStyle: { color: '#1f2937', fontSize: 11 },
+      borderColor: 'rgba(17,93,133,0.32)',
+      textStyle: { color: '#102d42', fontSize: 11 },
     },
   },
 };
@@ -74,9 +74,10 @@ function lineOption(hist: Series['history'], color: string, opts: { area?: boole
 }
 
 function VCard({ label, val, change, unit = '', digits = 2 }: { label: string; val?: number; change?: number; unit?: string; digits?: number }) {
+  const cc = useChartColors();
   const has = val !== null && val !== undefined;
   return (
-    <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 11, padding: '11px 12px' }}>
+    <div style={{ background: cc.statFill, borderRadius: 11, padding: '11px 12px' }}>
       <Text style={{ fontSize: 10 }} c="dimmed" tt="uppercase" lts={0.9}>{label}</Text>
       <Text ff="monospace" fw={700} size="lg" mt={3} mb={2}>
         {has ? fmt(val, digits) + unit : '—'}
@@ -89,9 +90,10 @@ function VCard({ label, val, change, unit = '', digits = 2 }: { label: string; v
 }
 
 function YieldCell({ tenor, y }: { tenor: string; y?: Series }) {
+  const cc = useChartColors();
   if (!y) return null;
   return (
-    <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 11, padding: '11px 12px' }}>
+    <div style={{ background: cc.statFill, borderRadius: 11, padding: '11px 12px' }}>
       <Text style={{ fontSize: 10.5 }} c="dimmed" tt="uppercase" lts={1}>UST {tenor}</Text>
       <Text ff="monospace" fw={700} size="xl" my={3}>{fmt(y.last)}%</Text>
       <Text ff="monospace" style={{ fontSize: 10.5 }} c={chgColor(y.change_1d)}>
@@ -104,12 +106,12 @@ function YieldCell({ tenor, y }: { tenor: string; y?: Series }) {
 export function Macro({ data }: { data: DashboardData }) {
   scheme = useMantineColorScheme().colorScheme !== 'light' ? 'dark' : 'light';
   const me = data.macro_ext;
-  const ovxChart = useMemo(() => lineOption(me.ovx?.history, '#ff9f43', { area: true }), [me.ovx?.history, scheme]);
-  const vixChart = useMemo(() => lineOption(data.macro.vix?.history, '#ff4d5e', { area: true }), [data.macro.vix?.history, scheme]);
-  const cadChart = useMemo(() => lineOption(me.usdcad?.history, '#4cc9f0'), [me.usdcad?.history, scheme]);
-  const copperChart = useMemo(() => lineOption(me.copper?.history, '#ff9f43'), [me.copper?.history, scheme]);
-  const rbChart = useMemo(() => lineOption(me.rbof?.history, '#2dd4a7'), [me.rbof?.history, scheme]);
-  const usoChart = useMemo(() => lineOption(me.uso?.history, '#ffb020'), [me.uso?.history, scheme]);
+  const ovxChart = useMemo(() => lineOption(me.ovx?.history, '#cf9440', { area: true }), [me.ovx?.history, scheme]);
+  const vixChart = useMemo(() => lineOption(data.macro.vix?.history, '#d6456b', { area: true }), [data.macro.vix?.history, scheme]);
+  const cadChart = useMemo(() => lineOption(me.usdcad?.history, '#009ed9'), [me.usdcad?.history, scheme]);
+  const copperChart = useMemo(() => lineOption(me.copper?.history, '#cf9440'), [me.copper?.history, scheme]);
+  const rbChart = useMemo(() => lineOption(me.rbof?.history, '#30b8a1'), [me.rbof?.history, scheme]);
+  const usoChart = useMemo(() => lineOption(me.uso?.history, '#009ed9'), [me.uso?.history, scheme]);
 
   const crack = me.crack_spread_321;
   const crackLevel =

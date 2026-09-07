@@ -1,9 +1,10 @@
 import { Badge, Group, Progress, ScrollArea, SimpleGrid, Stack, Text } from '@mantine/core';
-import { BandBadge, MiniHeadline, Panel, ProbBar, Tier3Card } from '../components/ui';
+import { BandBadge, MiniHeadline, Panel, ProbBar, Tier3Card, useChartColors } from '../components/ui';
 import { catColor, fmt, fmtInt } from '../lib/format';
 import type { DashboardData } from '../types';
 
 export function Geopolitics({ data }: { data: DashboardData }) {
+  const cc = useChartColors();
   const c = data.conflict;
   const tier3Geo = data.tier3_signals.filter((t) => ['warrisk', 'hurricane'].includes(t.id));
   const kalshiGeo = data.prediction_markets.kalshi_geo;
@@ -20,19 +21,19 @@ export function Geopolitics({ data }: { data: DashboardData }) {
               </Group>
               <Progress value={Math.min(100, cp.score)} size={8} radius="xl" transitionDuration={800} />
               <SimpleGrid cols={4} spacing={8} mt="sm" mb="sm">
-                <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 9, padding: '8px 10px' }}>
+                <div style={{ background: cc.statFill, borderRadius: 9, padding: '8px 10px' }}>
                   <Text style={{ fontSize: 10 }} c="dimmed" tt="uppercase" lts={0.8}>GDELT 7d mentions</Text>
                   <Text ff="monospace" fw={600} size="sm" mt={2}>{fmtInt(cp.mentions_7d_sample)}{cp.mentions_7d_sample >= 60 ? '+' : ''}</Text>
                 </div>
-                <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 9, padding: '8px 10px' }}>
+                <div style={{ background: cc.statFill, borderRadius: 9, padding: '8px 10px' }}>
                   <Text style={{ fontSize: 10 }} c="dimmed" tt="uppercase" lts={0.8}>News tone</Text>
                   <Text ff="monospace" fw={600} size="sm" mt={2} c={cp.tone < 0 ? 'red' : 'green'}>{fmt(cp.tone, 2)}</Text>
                 </div>
-                <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 9, padding: '8px 10px' }}>
+                <div style={{ background: cc.statFill, borderRadius: 9, padding: '8px 10px' }}>
                   <Text style={{ fontSize: 10 }} c="dimmed" tt="uppercase" lts={0.8}>RSS hits 72h</Text>
                   <Text ff="monospace" fw={600} size="sm" mt={2}>{fmtInt(cp.news_hits)}</Text>
                 </div>
-                <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 9, padding: '8px 10px' }}>
+                <div style={{ background: cc.statFill, borderRadius: 9, padding: '8px 10px' }}>
                   <Text style={{ fontSize: 10 }} c="dimmed" tt="uppercase" lts={0.8}>PM disruption</Text>
                   <Text ff="monospace" fw={600} size="sm" mt={2}>
                     {pm && pm.markets[0] ? `${fmt(100 - pm.markets[0].prob, 0)}%` : '—'}
@@ -66,7 +67,7 @@ export function Geopolitics({ data }: { data: DashboardData }) {
             <Stack gap={10}>
               {data.prediction_markets.polymarket.length ? (
                 data.prediction_markets.polymarket.map((e) => (
-                  <div key={e.id} style={{ border: '1px solid var(--mantine-color-default-border)', borderRadius: 12, padding: '12px 14px', background: 'rgba(255,255,255,0.02)' }}>
+                  <div key={e.id} style={{ border: '1px solid var(--mantine-color-default-border)', borderRadius: 12, padding: '12px 14px', background: cc.statFill }}>
                     <Text size="sm" fw={600} style={{ lineHeight: 1.4 }}>
                       <a href={e.url} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
                         {e.title}
@@ -92,13 +93,13 @@ export function Geopolitics({ data }: { data: DashboardData }) {
 
         <Panel label="Conflict & Escalation Signals">
           <SimpleGrid cols={2} spacing={10} mb="14px">
-            <div style={{ borderRadius: 12, padding: 14, textAlign: 'center', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--mantine-color-default-border)' }}>
+            <div style={{ borderRadius: 12, padding: 14, textAlign: 'center', background: cc.statFill, border: '1px solid var(--mantine-color-default-border)' }}>
               <Text ff="monospace" fw={700} style={{ fontSize: 26 }} c={(c.p_us_invades_iran ?? 0) > 20 ? 'red' : undefined}>
                 {fmt(c.p_us_invades_iran, 1)}%
               </Text>
               <Text style={{ fontSize: 10.5 }} c="dimmed" mt="4px" lts={0.5}>P(US invades Iran) · Polymarket</Text>
             </div>
-            <div style={{ borderRadius: 12, padding: 14, textAlign: 'center', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--mantine-color-default-border)' }}>
+            <div style={{ borderRadius: 12, padding: 14, textAlign: 'center', background: cc.statFill, border: '1px solid var(--mantine-color-default-border)' }}>
               <Text ff="monospace" fw={700} style={{ fontSize: 26 }} c={(c.p_ceasefire_holds ?? 0) < 60 ? 'red' : 'green'}>
                 {fmt(c.p_ceasefire_holds, 1)}%
               </Text>
@@ -106,11 +107,11 @@ export function Geopolitics({ data }: { data: DashboardData }) {
             </div>
           </SimpleGrid>
           <Stack gap={9}>
-            <Group justify="space-between" py={7} px={10} style={{ borderRadius: 9, background: 'rgba(255,255,255,0.03)' }}>
+            <Group justify="space-between" py={7} px={10} style={{ borderRadius: 9, background: cc.statFill }}>
               <Text size="xs" c="dimmed">Iran news tone (GDELT lexicon)</Text>
               <Text size="xs" fw={600} ff="monospace" c={(c.iran_news_tone ?? 0) < 0 ? 'red' : 'green'}>{fmt(c.iran_news_tone, 2)}</Text>
             </Group>
-            <Group justify="space-between" py={7} px={10} style={{ borderRadius: 9, background: 'rgba(255,255,255,0.03)' }}>
+            <Group justify="space-between" py={7} px={10} style={{ borderRadius: 9, background: cc.statFill }}>
               <Text size="xs" c="dimmed">Conflict component score</Text>
               <Text size="xs" fw={600} ff="monospace">{fmt(c.score, 1)} · {c.band}</Text>
             </Group>

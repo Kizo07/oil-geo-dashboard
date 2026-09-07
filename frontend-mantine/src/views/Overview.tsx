@@ -11,28 +11,28 @@ import type { DashboardData } from '../types';
 const CHART = {
   dark: {
     AXIS: {
-      axisLine: { lineStyle: { color: '#2a3245' } },
-      axisLabel: { color: '#8b93a7', fontFamily: 'JetBrains Mono', fontSize: 10 },
-      splitLine: { lineStyle: { color: 'rgba(255,255,255,0.045)' } },
+      axisLine: { lineStyle: { color: '#1e4254' } },
+      axisLabel: { color: '#a1b4c4', fontFamily: 'IBM Plex Mono', fontSize: 10 },
+      splitLine: { lineStyle: { color: 'rgba(8,191,255,0.05)' } },
     },
     TOOLTIP: {
       trigger: 'axis' as const,
-      backgroundColor: '#111622',
-      borderColor: '#2a3245',
-      textStyle: { color: '#e8ecf4', fontSize: 11 },
+      backgroundColor: '#07131d',
+      borderColor: 'rgba(86,183,229,0.34)',
+      textStyle: { color: '#edf7fc', fontSize: 11 },
     },
   },
   light: {
     AXIS: {
-      axisLine: { lineStyle: { color: '#c7cdd9' } },
-      axisLabel: { color: '#5a6378', fontFamily: 'JetBrains Mono', fontSize: 10 },
-      splitLine: { lineStyle: { color: 'rgba(15,23,42,0.07)' } },
+      axisLine: { lineStyle: { color: '#d3e3ee' } },
+      axisLabel: { color: '#445e72', fontFamily: 'IBM Plex Mono', fontSize: 10 },
+      splitLine: { lineStyle: { color: 'rgba(0,109,159,0.06)' } },
     },
     TOOLTIP: {
       trigger: 'axis' as const,
       backgroundColor: '#ffffff',
-      borderColor: '#c7cdd9',
-      textStyle: { color: '#1f2937', fontSize: 11 },
+      borderColor: 'rgba(17,93,133,0.32)',
+      textStyle: { color: '#102d42', fontSize: 11 },
     },
   },
 };
@@ -41,7 +41,7 @@ let scheme: 'dark' | 'light' = 'dark';
 
 function gaugeOption(composite: number, band: string): EChartsOption {
   const color =
-    composite >= 65 ? '#ff4d5e' : composite >= 45 ? '#ff9f43' : composite >= 25 ? '#ffd166' : '#2dd4a7';
+    composite >= 65 ? '#d6456b' : composite >= 45 ? '#cf9440' : composite >= 25 ? '#e3ac55' : '#30b8a1';
   return {
     series: [
       {
@@ -58,19 +58,19 @@ function gaugeOption(composite: number, band: string): EChartsOption {
           roundCap: true,
           itemStyle: { color, shadowBlur: 18, shadowColor: color },
         },
-        axisLine: { lineStyle: { width: 16, color: [[1, 'rgba(255,255,255,0.07)']] } },
+        axisLine: { lineStyle: { width: 16, color: [[1, scheme === 'dark' ? 'rgba(237,247,252,0.08)' : 'rgba(16,45,66,0.08)']] } },
         axisTick: { show: false },
         splitLine: { show: false },
         axisLabel: { show: false },
         pointer: { show: false },
         anchor: { show: false },
-        title: { show: true, offsetCenter: [0, '34%'], color: '#8b93a7', fontSize: 12, fontFamily: 'Inter' },
+        title: { show: true, offsetCenter: [0, '34%'], color: CHART[scheme].AXIS.axisLabel.color, fontSize: 12, fontFamily: 'Inter' },
         detail: {
           valueAnimation: true,
           offsetCenter: [0, '-4%'],
           fontSize: 40,
           fontWeight: 800,
-          fontFamily: 'JetBrains Mono',
+          fontFamily: 'IBM Plex Mono',
           color,
           formatter: (v: number) => v.toFixed(1),
         },
@@ -143,8 +143,8 @@ function curveOption(curve: DashboardData['prices']['curve']): EChartsOption {
         smooth: true,
         showSymbol: true,
         symbolSize: 7,
-        lineStyle: { color: '#4cc9f0', width: 2.5 },
-        itemStyle: { color: '#4cc9f0', borderColor: '#07090f', borderWidth: 2 },
+        lineStyle: { color: '#009ed9', width: 2.5 },
+        itemStyle: { color: '#009ed9', borderColor: scheme === 'dark' ? '#020609' : '#f5faff', borderWidth: 2 },
         areaStyle: {
           color: {
             type: 'linear',
@@ -153,8 +153,8 @@ function curveOption(curve: DashboardData['prices']['curve']): EChartsOption {
             x2: 0,
             y2: 1,
             colorStops: [
-              { offset: 0, color: 'rgba(76,201,240,0.22)' },
-              { offset: 1, color: 'rgba(76,201,240,0)' },
+              { offset: 0, color: 'rgba(0,158,217,0.22)' },
+              { offset: 1, color: 'rgba(0,158,217,0)' },
             ],
           },
         },
@@ -164,8 +164,8 @@ function curveOption(curve: DashboardData['prices']['curve']): EChartsOption {
           data: [
             {
               yAxis: curve[0].price,
-              label: { formatter: 'front', color: '#8b93a7', fontSize: 10 },
-              lineStyle: { color: 'rgba(255,176,32,0.5)', type: 'dashed' },
+              label: { formatter: 'front', color: CHART[scheme].AXIS.axisLabel.color, fontSize: 10 },
+              lineStyle: { color: 'rgba(207,148,64,0.55)', type: 'dashed' },
             },
           ],
         },
@@ -181,7 +181,7 @@ export function Overview({ data }: { data: DashboardData }) {
     [data.risk.composite, data.risk.band],
   );
   const wtiSpark = useMemo(
-    () => lineOption(data.prices.wti.history, '#ffb020', { area: true, xAxis: false, left: 0 }),
+    () => lineOption(data.prices.wti.history, '#009ed9', { area: true, xAxis: false, left: 0 }),
     [data.prices.wti.history, scheme],
   );
   const curve = useMemo(() => curveOption(data.prices.curve), [data.prices.curve, scheme]);
@@ -264,7 +264,7 @@ export function Overview({ data }: { data: DashboardData }) {
                 c={cs.regime === 'backwardation' ? 'red' : 'green'}
                 style={{
                   fontSize: 26,
-                  textShadow: cs.regime === 'backwardation' ? '0 0 24px rgba(255,77,94,0.4)' : '0 0 24px rgba(45,212,167,0.35)',
+                  textShadow: cs.regime === 'backwardation' ? '0 0 24px rgba(214,69,107,0.4)' : '0 0 24px rgba(48,184,161,0.35)',
                 }}
               >
                 {cs.regime === 'backwardation' ? '◣ BACKWARDATION' : '◢ CONTANGO'}
@@ -304,13 +304,13 @@ export function Overview({ data }: { data: DashboardData }) {
             {data.tier3_signals.map((t) => (
               <Group key={t.id} gap={10} wrap="nowrap">
                 <Text size="xs" fw={500} style={{ width: 200, flexShrink: 0 }}>{t.name}</Text>
-                <div style={{ flex: 1, height: 7, background: 'rgba(255,255,255,0.06)', borderRadius: 99, overflow: 'hidden' }}>
+                <div style={{ flex: 1, height: 7, background: scheme === 'dark' ? 'rgba(237,247,252,0.06)' : 'rgba(16,45,66,0.07)', borderRadius: 99, overflow: 'hidden' }}>
                   <div
                     style={{
                       height: '100%',
                       width: `${t.heat}%`,
                       borderRadius: 99,
-                      background: 'linear-gradient(90deg, #4cc9f0, #ffb020, #ff4d5e)',
+                      background: 'linear-gradient(90deg, #009ed9, #cf9440, #d6456b)',
                     }}
                   />
                 </div>

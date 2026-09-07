@@ -11,9 +11,9 @@ import type { AisData, AisZone, DashboardData } from '../types';
 const tile = (s: string) => `https://${s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png`;
 const CARTO_TILES = ['a', 'b', 'c', 'd'].map(tile);
 
-const COLOR_STOPPED = '#ff4d5e';
-const COLOR_SLOW = '#ffb020';
-const COLOR_UNDERWAY = '#4cc9f0';
+const COLOR_STOPPED = '#f58ba4';
+const COLOR_SLOW = '#e3ac55';
+const COLOR_UNDERWAY = '#6bdbff';
 const SENTENCE_END = /[.!?]$/;
 
 const FALLBACK_ZONES = {
@@ -59,7 +59,7 @@ function ExternalMapFallback() {
 function ExternalLiveMap({ zoneKey }: { zoneKey: FallbackZoneKey }) {
   const zone = FALLBACK_ZONES[zoneKey];
   return (
-    <div style={{ height: 430, width: '100%', borderRadius: 12, overflow: 'hidden', background: '#b6cee8' }}>
+    <div style={{ height: 430, width: '100%', borderRadius: 12, overflow: 'hidden', background: 'var(--surface-2)' }}>
       <iframe
         title={`Live vessel map — ${zone.name}`}
         src={zone.vesselFinderHref}
@@ -92,7 +92,7 @@ function styleFor(): StyleSpecification {
       },
     },
     layers: [
-      { id: 'bg', type: 'background', paint: { 'background-color': '#07090f' } },
+      { id: 'bg', type: 'background', paint: { 'background-color': '#020609' } },
       { id: 'carto', type: 'raster', source: 'carto', paint: { 'raster-opacity': 0.92 } },
     ],
   };
@@ -159,7 +159,7 @@ function ChokeMap({ zone }: { zone: AisZone }) {
         id: 'zone-line',
         type: 'line',
         source: 'zone-bbox',
-        paint: { 'line-color': '#ffb020', 'line-width': 1.4, 'line-dasharray': [3, 2], 'line-opacity': 0.75 },
+        paint: { 'line-color': '#e3ac55', 'line-width': 1.4, 'line-dasharray': [3, 2], 'line-opacity': 0.75 },
       });
       map.addSource('vessels', { type: 'geojson', data: fc });
       map.addLayer({
@@ -170,13 +170,13 @@ function ChokeMap({ zone }: { zone: AisZone }) {
           'circle-radius': 4.5,
           'circle-color': [
             'case',
-            ['<', ['get', 'sog'], 0], '#6b7280',
+            ['<', ['get', 'sog'], 0], '#819aaa',
             ['<=', ['get', 'sog'], 0.9], COLOR_STOPPED,
             ['<', ['get', 'sog'], 8], COLOR_SLOW,
             COLOR_UNDERWAY,
           ],
           'circle-stroke-width': 1,
-          'circle-stroke-color': 'rgba(7,9,15,0.85)',
+          'circle-stroke-color': 'rgba(2,6,9,0.85)',
           'circle-opacity': 0.95,
         },
       });
@@ -190,7 +190,7 @@ function ChokeMap({ zone }: { zone: AisZone }) {
         if (!f) return;
         const p = f.properties as Record<string, string | number>;
         const html = `
-          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.5">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.5">
             <b>${p.name ? p.name : '(name n/a)'}</b><br/>
             MMSI ${p.mmsi}<br/>
             SOG ${Number(p.sog) >= 0 ? `${fmt(Number(p.sog), 1)} kn` : 'n/a'}
@@ -334,7 +334,7 @@ export function Traffic({ data }: { data: DashboardData }) {
         <Text size="xs" c="dimmed">
           {fallbackNeeded
             ? 'Fallback maps © VesselFinder and OpenStreetMap contributors; native AISStream statistics are unavailable.'
-            : 'Positions from the free AISStream.io websocket feed (server-side, key stays local); basemap © OpenStreetMap contributors © CARTO. Dashed amber outline marks the monitored bounding box.'}
+            : 'Positions from the free AISStream.io websocket feed (server-side, key stays local); basemap © OpenStreetMap contributors © CARTO. Dashed gold outline marks the monitored bounding box.'}
         </Text>
       </Stack>
     </>

@@ -26,10 +26,10 @@ export function Header({
             borderRadius: 12,
             display: 'grid',
             placeItems: 'center',
-            background: 'linear-gradient(135deg, #ffb020, #ff7847)',
-            color: '#14100a',
+            background: 'linear-gradient(135deg, #08bfff, #e3ac55)',
+            color: 'var(--accent-ink)',
             fontSize: 22,
-            boxShadow: '0 0 28px rgba(255,176,32,0.35)',
+            boxShadow: '0 0 28px var(--halo-cyan)',
             flexShrink: 0,
           }}
           aria-hidden

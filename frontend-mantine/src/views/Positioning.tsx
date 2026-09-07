@@ -11,28 +11,28 @@ import type { DashboardData } from '../types';
 const CHART = {
   dark: {
     AXIS: {
-      axisLine: { lineStyle: { color: '#2a3245' } },
-      axisLabel: { color: '#8b93a7', fontFamily: 'JetBrains Mono', fontSize: 10 },
-      splitLine: { lineStyle: { color: 'rgba(255,255,255,0.045)' } },
+      axisLine: { lineStyle: { color: '#1e4254' } },
+      axisLabel: { color: '#a1b4c4', fontFamily: 'IBM Plex Mono', fontSize: 10 },
+      splitLine: { lineStyle: { color: 'rgba(8,191,255,0.05)' } },
     },
     TOOLTIP: {
       trigger: 'axis' as const,
-      backgroundColor: '#111622',
-      borderColor: '#2a3245',
-      textStyle: { color: '#e8ecf4', fontSize: 11 },
+      backgroundColor: '#07131d',
+      borderColor: 'rgba(86,183,229,0.34)',
+      textStyle: { color: '#edf7fc', fontSize: 11 },
     },
   },
   light: {
     AXIS: {
-      axisLine: { lineStyle: { color: '#c7cdd9' } },
-      axisLabel: { color: '#5a6378', fontFamily: 'JetBrains Mono', fontSize: 10 },
-      splitLine: { lineStyle: { color: 'rgba(15,23,42,0.07)' } },
+      axisLine: { lineStyle: { color: '#d3e3ee' } },
+      axisLabel: { color: '#445e72', fontFamily: 'IBM Plex Mono', fontSize: 10 },
+      splitLine: { lineStyle: { color: 'rgba(0,109,159,0.06)' } },
     },
     TOOLTIP: {
       trigger: 'axis' as const,
       backgroundColor: '#ffffff',
-      borderColor: '#c7cdd9',
-      textStyle: { color: '#1f2937', fontSize: 11 },
+      borderColor: 'rgba(17,93,133,0.32)',
+      textStyle: { color: '#102d42', fontSize: 11 },
     },
   },
 };
@@ -51,11 +51,11 @@ function cotOption(history: { date: string; net: number }[]): EChartsOption {
         data: history.map((h) => ({
           value: h.net,
           itemStyle: {
-            color: h.net >= 0 ? 'rgba(45,212,167,0.8)' : 'rgba(255,77,94,0.8)',
+            color: h.net >= 0 ? 'rgba(48,184,161,0.8)' : 'rgba(214,69,107,0.8)',
             borderRadius: [3, 3, 0, 0],
           },
         })),
-        markLine: { silent: true, symbol: 'none', data: [{ yAxis: 0, lineStyle: { color: 'rgba(255,255,255,0.25)' } }] },
+        markLine: { silent: true, symbol: 'none', data: [{ yAxis: 0, lineStyle: { color: scheme === 'dark' ? 'rgba(237,247,252,0.25)' : 'rgba(16,45,66,0.25)' } }] },
       },
     ],
   };
@@ -65,10 +65,8 @@ function kalshiOption(points: { strike: number; prob: number }[]): EChartsOption
   return {
     grid: { left: 44, right: 14, top: 20, bottom: 28 },
     tooltip: {
-      trigger: 'axis',
-      backgroundColor: '#111622',
-      borderColor: '#2a3245',
-      textStyle: { color: '#e8ecf4', fontSize: 12 },
+      ...CHART[scheme].TOOLTIP,
+      textStyle: { color: CHART[scheme].TOOLTIP.textStyle.color, fontSize: 12 },
       formatter: (p: unknown) => {
         const arr = p as { name: string; value: number }[];
         return `strike $${arr[0].name}<br/>P(settle &gt; strike): <b>${fmt(arr[0].value, 1)}%</b>`;
@@ -81,13 +79,13 @@ function kalshiOption(points: { strike: number; prob: number }[]): EChartsOption
         type: 'bar',
         data: points.map((p) => ({
           value: p.prob,
-          itemStyle: { color: p.prob >= 50 ? 'rgba(45,212,167,0.85)' : 'rgba(255,77,94,0.8)', borderRadius: [3, 3, 0, 0] },
+          itemStyle: { color: p.prob >= 50 ? 'rgba(48,184,161,0.85)' : 'rgba(214,69,107,0.8)', borderRadius: [3, 3, 0, 0] },
         })),
         barWidth: '62%',
         markLine: {
           silent: true,
           symbol: 'none',
-          data: [{ yAxis: 50, label: { formatter: '50%', color: '#8b93a7', fontSize: 10 }, lineStyle: { color: 'rgba(255,255,255,0.25)', type: 'dashed' } }],
+          data: [{ yAxis: 50, label: { formatter: '50%', color: CHART[scheme].AXIS.axisLabel.color, fontSize: 10 }, lineStyle: { color: scheme === 'dark' ? 'rgba(237,247,252,0.25)' : 'rgba(16,45,66,0.25)', type: 'dashed' } }],
         },
       },
     ],

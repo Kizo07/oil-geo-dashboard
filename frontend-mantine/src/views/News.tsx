@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Badge, Chip, Group, ScrollArea, Stack, Text } from '@mantine/core';
-import { Panel } from '../components/ui';
+import { Panel, useChartColors } from '../components/ui';
 import type { DashboardData, NewsItem } from '../types';
 
 function tagColor(tag: string): string {
@@ -18,12 +18,13 @@ function tagColor(tag: string): string {
 }
 
 function NewsItemRow({ n }: { n: NewsItem }) {
+  const cc = useChartColors();
   return (
     <div
       style={{
         padding: '10px 12px',
         borderRadius: 10,
-        background: 'rgba(255,255,255,0.025)',
+        background: cc.statFill,
         borderLeft: `3px solid ${n.sentiment < 0 ? 'var(--mantine-color-red-5)' : n.sentiment > 0 ? 'var(--mantine-color-green-5)' : 'transparent'}`,
       }}
     >
